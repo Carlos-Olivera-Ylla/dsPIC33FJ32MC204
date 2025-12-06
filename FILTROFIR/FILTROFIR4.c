@@ -4,7 +4,7 @@
  * usando la estructura definida en lowpassexample.s y la señal en
  * inputsignal_square1khz.s
  *
- * Comentarios en español y nombres coincidentes con tus .s:
+ * Con nombres coincidentes con:
  *  - _square1k                 -> extern fractional square1k[256];
  *  - _lowpassexampleFilter     -> extern FIRStruct lowpassexampleFilter;
  **********************************************************************/
