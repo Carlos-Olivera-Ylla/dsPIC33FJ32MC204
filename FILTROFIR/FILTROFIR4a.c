@@ -92,36 +92,31 @@ int main(void)
     FIR(BLOCK_LENGTH, &FilterOut[0], &square1k[0], &lowpassexampleFilter);
 
     /* En FilterOut quedan las muestras filtradas; bucle infinito */
-    while (1) {
-        int i;
-        unsigned int dato_enviar;
+ while (1) {
+    int i;
+    
+    TRISB = 0x0000;
+    
+    for (i = 0; i < BLOCK_LENGTH; i++) {
+        /* Convertir Q15 a positivo simple:
+           Tomar el valor absoluto y multiplicar por 2 para usar 16 bits */
         
-        /* 1. Configurar puerto B como salida digital */
-        TRISB = 0x0000;  /* Todos los pines de PORTB como salidas (16 bits) */
+        int valor_q15 = FilterOut[i];  /* Valor en Q15 con signo */
+        unsigned int valor_positivo;
         
-        /* 2. Enviar CÍCLICAMENTE cada muestra del array FilterOut */
-        for (i = 0; i < BLOCK_LENGTH; i++) {
-            /* OPCIÓN B: Convertir de Q15 a positivo (0-65535) */
-            /* Q15: -1.0 a 0.9999 representado en complemento a 2 */
-            
-            if (FilterOut[i] < 0) {
-                /* Convertir negativo a positivo (valor absoluto escalado) */
-                /* Multiplicar por 32768 para convertir de fracción (0-1) a entero (0-32768) */
-                dato_enviar = (-FilterOut[i]) * 32768;
-            } else {
-                /* Valor positivo, escalar de fracción a entero */
-                dato_enviar = FilterOut[i] * 32768;
-            }
-            
-            /* Asegurar que esté en el rango 0-65535 y enviar por PORTB */
-            PORTB = dato_enviar & 0xFFFF;
-            
-            /* 3. Esperar 100ms entre muestras */
-            __delay_ms(100);  /* Delay preciso de 100 milisegundos */
+        if (valor_q15 < 0) {
+            valor_positivo = -valor_q15;  /* Valor absoluto */
+        } else {
+            valor_positivo = valor_q15;
         }
         
-        /* El bucle se repite infinitamente (cíclico) */
+        /* Escalar: Q15 usa 15 bits para magnitud, nosotros queremos 16 bits */
+        valor_positivo = valor_positivo * 2;  /* o valor_positivo << 1 */
+        
+        PORTB = valor_positivo;
+        __delay_ms(100);
     }
+}
     
     return 0;
 }
